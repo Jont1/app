@@ -1,0 +1,250 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Lgvl Anon</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: #2b2640;
+            color: #ffffff;
+        }
+        .container {
+            display: flex;
+            height: 100vh;
+        }
+        .sidebar {
+            width: 250px;
+            padding: 20px;
+            background-color: #332e4a;
+        }
+        .main-content {
+            flex-grow: 1;
+            padding: 20px;
+            overflow-y: auto;
+        }
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+        .logo {
+            font-size: 24px;
+            font-weight: bold;
+        }
+        .nav {
+            display: flex;
+            gap: 20px;
+        }
+        .nav a {
+            color: #ffffff;
+            text-decoration: none;
+        }
+        .user-info {
+            display: flex;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+        .avatar {
+            width: 40px;
+            height: 40px;
+            background-color: #4a4360;
+            border-radius: 50%;
+            margin-right: 10px;
+        }
+        .new-post-btn {
+            background-color: #f6e05e;
+            color: #000000;
+            border: none;
+            padding: 10px;
+            border-radius: 5px;
+            width: 100%;
+            cursor: pointer;
+        }
+        .post {
+            background-color: #332e4a;
+            border-radius: 10px;
+            padding: 15px;
+            margin-bottom: 15px;
+        }
+        .post-header {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 10px;
+        }
+        .post-actions {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-top: 10px;
+        }
+        .vote-buttons {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        .vote-btn {
+            background-color: #4a4360;
+            border: none;
+            color: #ffffff;
+            width: 30px;
+            height: 30px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+        }
+        .comment-btn {
+            background: none;
+            border: none;
+            color: #ffffff;
+            cursor: pointer;
+        }
+        #new-post-modal {
+            display: none;
+            position: fixed;
+            z-index: 1;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0,0,0,0.4);
+        }
+        .modal-content {
+            background-color: #332e4a;
+            margin: 15% auto;
+            padding: 20px;
+            border-radius: 10px;
+            width: 50%;
+        }
+        #new-post-content {
+            width: 100%;
+            height: 100px;
+            margin-bottom: 10px;
+            background-color: #4a4360;
+            color: #ffffff;
+            border: none;
+            padding: 10px;
+            border-radius: 5px;
+        }
+        #submit-post {
+            background-color: #f6e05e;
+            color: #000000;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="sidebar">
+            <div class="user-info">
+                <div class="avatar"></div>
+                <div>
+                    <div>Anonymous Yakker</div>
+                    <div>Yakarma: 150</div>
+                </div>
+            </div>
+            <button class="new-post-btn" onclick="openNewPostModal()">New post</button>
+        </div>
+        <div class="main-content">
+            <div class="header">
+                <div class="logo">🐾 Lgvl Anon</div>
+                <nav class="nav">
+                    <a href="#">Home</a>
+                    <a href="#">Explore</a>
+                    <a href="#">Profile</a>
+                    <a href="#">Settings</a>
+                </nav>
+            </div>
+            <div id="posts">
+                <!-- Existing posts will be here -->
+            </div>
+        </div>
+    </div>
+
+    <div id="new-post-modal">
+        <div class="modal-content">
+            <textarea id="new-post-content" placeholder="What's on your mind?"></textarea>
+            <button id="submit-post" onclick="submitNewPost()">Post</button>
+        </div>
+    </div>
+
+    <script>
+        // Initialize posts
+        const initialPosts = [
+            {content: "Just saw the funniest thing at the park today...", time: "2 hours ago", votes: 12},
+            {content: "Anyone up for a study group session later?", time: "3 hours ago", votes: 0},
+            {content: "The weather is amazing today! Perfect for a hike.", time: "4 hours ago", votes: 0}
+        ];
+
+        // Function to create a post element
+        function createPostElement(post) {
+            const postElement = document.createElement('div');
+            postElement.className = 'post';
+            postElement.innerHTML = `
+                <div class="post-header">
+                    <div>Anonymous poster</div>
+                    <div>${post.time}</div>
+                </div>
+                <div class="post-content">${post.content}</div>
+                <div class="post-actions">
+                    <div class="vote-buttons">
+                        <button class="vote-btn" onclick="vote(this, 1)">↑</button>
+                        <span>${post.votes}</span>
+                        <button class="vote-btn" onclick="vote(this, -1)">↓</button>
+                    </div>
+                    <button class="comment-btn">Comment</button>
+                </div>
+            `;
+            return postElement;
+        }
+
+        // Function to render posts
+        function renderPosts() {
+            const postsContainer = document.getElementById('posts');
+            postsContainer.innerHTML = '';
+            initialPosts.forEach(post => {
+                postsContainer.appendChild(createPostElement(post));
+            });
+        }
+
+        // Function to open new post modal
+        function openNewPostModal() {
+            document.getElementById('new-post-modal').style.display = 'block';
+        }
+
+        // Function to submit new post
+        function submitNewPost() {
+            const content = document.getElementById('new-post-content').value;
+            if (content.trim() !== '') {
+                const newPost = {
+                    content: content,
+                    time: 'Just now',
+                    votes: 0
+                };
+                initialPosts.unshift(newPost);
+                renderPosts();
+                document.getElementById('new-post-modal').style.display = 'none';
+                document.getElementById('new-post-content').value = '';
+            }
+        }
+
+        // Function to handle voting
+        function vote(button, value) {
+            const voteCount = button.parentElement.querySelector('span');
+            voteCount.textContent = parseInt(voteCount.textContent) + value;
+        }
+
+        // Initial render
+        renderPosts();
+    </script>
+</body>
+</html>
